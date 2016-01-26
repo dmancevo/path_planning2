@@ -1,0 +1,32 @@
+<?xml version="1.0"?> 
+<sdf version="1.4">
+<model name="marble">
+  <link name="link">
+    <pose>1 1 0.25 0 0 0</pose>
+
+    <collision name="collision">
+      <geometry>
+        <sphere>
+          <radius>0.25</radius>
+        </sphere>
+      </geometry>
+    </collision>
+
+    <visual name="visual">
+      <geometry>
+        <sphere>
+          <radius>0.25</radius>
+        </sphere>
+      </geometry>
+      <material>
+        <script>
+          <uri>file://media/materials/scripts/gazebo.material</uri>
+          <name>Gazebo/Blue</name>
+        </script>
+      </material>
+    </visual>
+  </link>
+  <plugin name="discrete" filename="build/libdiscrete.so"/>
+</model>
+
+</sdf>
