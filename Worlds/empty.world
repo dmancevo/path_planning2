@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sdf version="1.4">
+ <world name="default">
+  <!-- Ground Plane -->
+  <include>
+   <uri>
+    model://ground_plane
+   </uri>
+  </include>
+  <model name="target_marble">
+   <link name="link">
+    <pose>
+     14 19 0.25 0 0 0
+    </pose>
+    <collision name="collision">
+     <geometry>
+      <sphere>
+       <radius>
+        0.25
+       </radius>
+      </sphere>
+     </geometry>
+    </collision>
+    <visual name="visual">
+     <geometry>
+      <sphere>
+       <radius>
+        0.25
+       </radius>
+      </sphere>
+     </geometry>
+     <material>
+      <script>
+       <uri>
+        file://media/materials/scripts/gazebo.material
+       </uri>
+       <name>
+        Gazebo/Green
+       </name>
+      </script>
+     </material>
+    </visual>
+   </link>
+  </model>
+  <model name="two_wheels">
+   <static>
+    true
+   </static>
+   <link name="chassis">
+    <pose>
+     0 0 .1 0 0 0
+    </pose>
+    <collision name="collision">
+     <geometry>
+      <box>
+       <size>
+        .4 .2 .1
+       </size>
+      </box>
+     </geometry>
+    </collision>
+    <visual name="visual">
+     <geometry>
+      <box>
+       <size>
+        .4 .2 .1
+       </size>
+      </box>
+     </geometry>
+    </visual>
+    <collision name="caster_collision">
+     <pose>
+      -0.15 0 -0.05 0 0 0
+     </pose>
+     <geometry>
+      <sphere>
+       <radius>
+        .05
+       </radius>
+      </sphere>
+     </geometry>
+    </collision>
+    <visual name="caster_visual">
+     <pose>
+      -0.15 0 -0.05 0 0 0
+     </pose>
+     <geometry>
+      <sphere>
+       <radius>
+        .05
+       </radius>
+      </sphere>
+     </geometry>
+    </visual>
+   </link>
+   <link name="left_wheel">
+    <pose>
+     0.1 0.13 0.1 0 1.5707 1.5707
+    </pose>
+    <collision name="collision">
+     <geometry>
+      <cylinder>
+       <radius>
+        .1
+       </radius>
+       <length>
+        .05
+       </length>
+      </cylinder>
+     </geometry>
+    </collision>
+    <visual name="visual">
+     <geometry>
+      <cylinder>
+       <radius>
+        .1
+       </radius>
+       <length>
+        .05
+       </length>
+      </cylinder>
+     </geometry>
+    </visual>
+   </link>
+   <link name="right_wheel">
+    <pose>
+     0.1 -0.13 0.1 0 1.5707 1.5707
+    </pose>
+    <collision name="collision">
+     <geometry>
+      <cylinder>
+       <radius>
+        .1
+       </radius>
+       <length>
+        .05
+       </length>
+      </cylinder>
+     </geometry>
+    </collision>
+    <visual name="visual">
+     <geometry>
+      <cylinder>
+       <radius>
+        .1
+       </radius>
+       <length>
+        .05
+       </length>
+      </cylinder>
+     </geometry>
+    </visual>
+   </link>
+  </model>
+  <include>
+   <uri>
+    model://sun
+   </uri>
+  </include>
+ </world>
+</sdf>
