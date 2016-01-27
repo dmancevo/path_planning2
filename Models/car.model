@@ -1,13 +1,13 @@
 <?xml version='1.0'?>
 <sdf version='1.4'>
-  <model name="two_wheels">
+  <model name="car">
   	<link name='chassis'>
-      <gravity>0</gravity>
             <pose>0 0 .1 0 0 0</pose>
+            <gravity>0</gravity>
             <collision name='collision'>
               <geometry>
                 <box>
-                  <size>.4 .2 .1</size>
+                  <size>.5 .2 .1</size>
                 </box>
               </geometry>
             </collision>
@@ -15,7 +15,7 @@
             <visual name='visual'>
               <geometry>
                 <box>
-                  <size>.4 .2 .1</size>
+                  <size>.5 .2 .1</size>
                 </box>
               </geometry>
             </visual>
@@ -40,9 +40,9 @@
           </visual>
           </link>
 
-        <link name="left_wheel">
+        <link name="left_front__wheel">
+        <pose>0.2 0.13 0.1 0 1.5707 1.5707</pose>
         <gravity>0</gravity>
-        <pose>0.1 0.13 0.1 0 1.5707 1.5707</pose>
         <collision name="collision">
           <geometry>
             <cylinder>
@@ -61,9 +61,9 @@
         </visual>
       </link>
 
-      <link name="right_wheel">
+      <link name="right_front_wheel">
+        <pose>0.2 -0.13 0.1 0 1.5707 1.5707</pose>
         <gravity>0</gravity>
-        <pose>0.1 -0.13 0.1 0 1.5707 1.5707</pose>
         <collision name="collision">
           <geometry>
             <cylinder>
@@ -81,6 +81,49 @@
           </geometry>
         </visual>
       </link>
-    <plugin name="discrete" filename="build/libdiscrete.so"/>
+
+      <link name="left_back__wheel">
+        <pose>-0.2 0.13 0.1 0 1.5707 1.5707</pose>
+        <gravity>0</gravity>
+        <collision name="collision">
+          <geometry>
+            <cylinder>
+              <radius>.1</radius>
+              <length>.05</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <cylinder>
+              <radius>.1</radius>
+              <length>.05</length>
+            </cylinder>
+          </geometry>
+        </visual>
+      </link>
+
+      <link name="right_back_wheel">
+        <pose>-0.2 -0.13 0.1 0 1.5707 1.5707</pose>
+        <gravity>0</gravity>
+        <collision name="collision">
+          <geometry>
+            <cylinder>
+              <radius>.1</radius>
+              <length>.05</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <cylinder>
+              <radius>.1</radius>
+              <length>.05</length>
+            </cylinder>
+          </geometry>
+        </visual>
+      </link>
+    <!-- <plugin name="discrete" filename="build/libdiscrete.so"/> -->
+    <plugin name="kinPoint" filename="build/libkinPoint.so"/>
   </model>
 </sdf>

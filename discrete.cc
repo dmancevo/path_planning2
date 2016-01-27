@@ -12,7 +12,7 @@ namespace gazebo
   {
 
     public:
-      std::string marble = "link";
+      std::string chassis = "chassis";
       unsigned long long int i = 0;
       unsigned int t = 0;
       std::vector<std::pair<int,int>> path;
@@ -42,7 +42,7 @@ namespace gazebo
       i += 1;
       if(i % 1000 == 0 && t<path.size()){
         this->model->SetLinkWorldPose(math::Pose(path[t].first,
-          path[t].second,0.25,0,0,0), marble);
+          path[t].second,0.25,0,0,0), chassis);
         t += 1;
       }
     }
