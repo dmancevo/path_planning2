@@ -9,20 +9,12 @@
 struct Point{int x; int y;};
 
 V_graph::V_graph(std::string polyObstMap){
-	polygons = readPolygonMap(polyObstMap);
-};
-
-
-bool V_graph::borders(double x, double y){
-
-};
-
-std::vector<std::pair<double,double> > readPolygonMap(std::string polyObstMap){
 	std::ifstream file(polyObstMap.c_str());
 	std::string str;
+	std::vector<std::pair<double,double> > *polygon = new std::vector<std::pair<double,double> >();
 	std::pair<double,double> point;
-	std::vector<std::pair<double,double> > polygons;
 
+	int i = 0;
 	while (std::getline(file, str))
     {
         std::vector<std::string> coords;
@@ -31,8 +23,24 @@ std::vector<std::pair<double,double> > readPolygonMap(std::string polyObstMap){
         point = std::make_pair(atof(coords[0].c_str()),
         	atof(coords[1].c_str()));
 
-        polygons.push_back(point);
+        if (i == 0)
+        	start = point;
+
+        if (i==1)
+        	end = point;
+
+        if (i > 2){
+
+        	if (point.first == 0.0 && point.second == 0.0){
+        		polygons.push_back(*polygon);
+        		polygon = new std::vector<std::pair<double,double> >();
+        	} else{
+        		polygon->push_back(point);
+        	}
+        	
+        }
+        i+=1;
     }
-    return polygons;
+
 };
 

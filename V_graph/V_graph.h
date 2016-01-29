@@ -8,8 +8,10 @@ class V_graph{
 public:
 	V_graph(std::string polyObstMap);
 	std::vector<std::pair<double,double> > nodes;
+	std::pair<double,double> start;
+	std::pair<double,double> end;
+
 
 private:
-	std::vector<std::pair<double,double> > polygons;
-	bool borders(double x, double y);
+	std::vector<std::vector<std::pair<double,double> > >polygons;
 };
