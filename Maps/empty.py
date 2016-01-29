@@ -8,6 +8,9 @@ world = '''
 <?xml version="1.0"?> 
 <sdf version="1.4">
   <world name="default">
+  <physics type='ode'>
+  <real_time_update_rate>1000.000000</real_time_update_rate>
+  </physics>
 
   <!-- Ground Plane -->
     <include>

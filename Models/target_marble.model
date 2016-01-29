@@ -1,8 +1,9 @@
 <?xml version="1.0"?> 
 <sdf version="1.4">
 <model name="target_marble">
+  <static>true</static>
   <link name="link">
-    <pose>14 19 0.25 0 0 0</pose>
+    <pose>5 5 1.30 0 0 0</pose>
 
     <collision name="collision">
       <geometry>

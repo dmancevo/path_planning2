@@ -8,7 +8,7 @@
 
 namespace gazebo
 {
-  class KinematicPointNavigation : public ModelPlugin
+  class DynamicPointNavigation : public ModelPlugin
   {
 
     public:
@@ -18,23 +18,29 @@ namespace gazebo
 
       //Keep track of iteration and path step.
       // unsigned long long int i = 0;
-      unsigned int t = 0;
+      unsigned int t = 1;
 
-      //Velocity cap.
-      float v_cap = 4.0;
+      //Acceleration cap.
+      float a_cap = 5.0;
 
       //Path to follow.
-      int x [10] = {1,2,4,6,8,5,5,4,3,1};
-      int y [10] = {1,6,8,5,5,4,3,1,4,3};
+      int x [5] = {1,5,5,1,1};
+      int y [5] = {1,1,5,5,1};
       // std::vector<std::pair<int,int>> path;
       math::Vector3 target;
+      math::Vector3 p_target;
       math::Vector3 v_to_target;
+      float d_to_target;
 
       //Keep track of current position.
       math::Vector3 position;
 
       //Keep track of current velocity.
       math::Vector3 velocity;
+
+      //Keep track of acceleration.
+      math::Vector3 acceleration;
+      float alpha;
 
 
     public: void Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
@@ -45,7 +51,7 @@ namespace gazebo
       // Listen to the update event. This event is broadcast every
       // simulation iteration.
       this->updateConnection = event::Events::ConnectWorldUpdateBegin(
-          boost::bind(&KinematicPointNavigation::OnUpdate, this, _1));
+          boost::bind(&DynamicPointNavigation::OnUpdate, this, _1));
 
       //path planner
 
@@ -55,26 +61,35 @@ namespace gazebo
     public: void OnUpdate(const common::UpdateInfo & /*_info*/)
     {
 
-      //Acquire position and set direction towards current target.
+      //Acquire position.
       math::Pose pose = this->model->GetWorldPose();
       position = pose.pos;
+
+      //Set direction towards current target.
+      p_target = math::Vector3(x[t-1],y[t-1],position.z);
       target = math::Vector3(x[t],y[t],position.z);
       v_to_target = target - position;
+      d_to_target = position.Distance(target);
 
-      //Normalize, cap and set velocity towards target.
-      v_to_target = v_cap * v_to_target.Normalize();
+      //Update alpha
+      alpha = -1 + 2*d_to_target/p_target.Distance(target);
 
-      this->model->SetLinearVel(v_to_target);
-      // velocity = v_to_target;
+      //Normalize, cap and set acceleration towards target.
+      acceleration = a_cap * alpha * v_to_target.Normalize();
 
-      //Update position.
-      // position = position + (0.0001 * velocity);
-      // this->model->SetLinkWorldPose(math::Pose(position.x,
-      //     position.y,position.z,0,0,0), chassis);
+      //Acquire velocity.
+      velocity = this->model->GetWorldLinearVel();
 
-      if(position.Distance(target) < 1){
+      //Update velicity according to acceleration.
+      velocity = velocity + 0.0001*acceleration;
+      this->model->SetLinearVel(velocity);
+
+      //Update target when reached.
+      if(d_to_target < 0.00001){
         t+=1;
-        t = t % 10;
+        t = t % 5;
+        if(t==0)
+          t+=1;
       }
         
     }
@@ -88,5 +103,5 @@ namespace gazebo
   };
 
   // Register this plugin with the simulator
-  GZ_REGISTER_MODEL_PLUGIN(KinematicPointNavigation)
+  GZ_REGISTER_MODEL_PLUGIN(DynamicPointNavigation)
 }

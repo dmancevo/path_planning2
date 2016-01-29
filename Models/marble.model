@@ -28,7 +28,8 @@
     </visual>
   </link>
   <!-- <plugin name="discrete" filename="build/libdiscrete.so"/> -->
-  <plugin name="kinPoint" filename="build/libkinPoint.so"/>
+  <!-- <plugin name="kinPoint" filename="build/libkinPoint.so"/> -->
+  <plugin name="dynPoint" filename="build/libdynPoint.so"/>
 </model>
 
 </sdf>

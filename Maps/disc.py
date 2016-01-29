@@ -68,6 +68,12 @@ obstacle_xml = '''
               <size>1 1 1</size>
             </box>
           </geometry>
+          <material>
+          <script>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+            <name>Gazebo/Wood</name>
+          </script>
+        </material>
         </visual>
       </link>
 </model>
