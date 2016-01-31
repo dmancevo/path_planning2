@@ -48,11 +48,18 @@ while i < len(polygons):
 			n1, n2 = nodes[j], nodes[0]
 
 		plt.plot([(1-l)*n1[0]+l*n2[0] for l in line],
-			[(1-l)*n1[1]+l*n2[1] for l in line])
+			[(1-l)*n1[1]+l*n2[1] for l in line], color='blue')
 
 		plt.scatter([n[0] for n in nodes],[n[1] for n in nodes])
 
 	i+=1
+
+# graph = []
+
+# for edge in graph:
+# 	n1,n2 = edge
+# 	plt.plot([(1-l)*n1[0]+l*n2[0] for l in line],
+# 			[(1-l)*n1[1]+l*n2[1] for l in line], color='green')
 
 plt.show()
 plt.close()
