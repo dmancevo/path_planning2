@@ -6,23 +6,8 @@
 #include <tuple>
 #include <random>
 #include <iostream>
+#include "dp_structs.h"
 
-struct segment{
-    double time;
-    double acc;
-    segment() {};
-    segment(double time, double acc) : time(time), acc(acc) {};
-};
-
-struct trajectory {
-    double time;
-    segment x_seg1;
-    segment x_seg2;
-    segment x_seg3;
-    segment y_seg1;
-    segment y_seg2;
-    segment y_seg3;
-};
 
 std::pair<double, double> maxForEach(std::pair<double, double> p1, std::pair<double, double> p2, double max) {
     max = fabs(max);
@@ -297,7 +282,7 @@ std::vector<std::pair<double,double>> wayPointVelocities(std::vector<std::pair<d
     return velocities;
 }
 
-std::vector<trajectory> waypointFollowing(std::vector<std::pair<double,double>> points,
+std::pair<std::vector<segment>,std::vector<segment>> waypointFollowing(std::vector<std::pair<double,double>> points,
                                           std::pair<double, double> vel_start,
                                           std::pair<double, double> vel_finish,
                                           double vel_max, double acc_max, unsigned int iter=1000) {
@@ -348,8 +333,36 @@ std::vector<trajectory> waypointFollowing(std::vector<std::pair<double,double>> 
         velocities.push_back(vel1);
         trajectories.push_back(wayPointTrajectory1);
     }
+    std::pair<std::vector<segment>,std::vector<segment>> segmentTrajectory;
+    std::vector<segment> segmentsX;
+    std::vector<segment> segmentsY;
 
-    return trajectories[best];
+    for (auto tr: trajectories[best]) {
+        if (tr.x_seg1.time > 0) {
+            segmentsX.push_back(tr.x_seg1);
+        }
+        if (tr.x_seg2.time > 0) {
+            segmentsX.push_back(tr.x_seg2);
+        }
+        if (tr.x_seg3.time > 0) {
+            segmentsX.push_back(tr.x_seg3);
+        }
+
+        if (tr.y_seg1.time > 0) {
+            segmentsY.push_back(tr.y_seg1);
+        }
+        if (tr.y_seg2.time > 0) {
+            segmentsY.push_back(tr.y_seg2);
+        }
+        if (tr.y_seg3.time > 0) {
+            segmentsY.push_back(tr.y_seg3);
+        }
+    }
+
+    segmentTrajectory.first = segmentsX;
+    segmentTrajectory.second = segmentsY;
+
+    return segmentTrajectory;
 }
 
 /*
