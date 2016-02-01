@@ -5,9 +5,6 @@ from Tkinter import Tk
 from tkFileDialog import askopenfilename
 import matplotlib.pyplot as plt
 
-def angle(v1, v2):
-  return np.arccos(v1.dot(v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
-
 Tk().withdraw() 
 filename = askopenfilename()
 
@@ -27,7 +24,7 @@ for n in range(N):
 #txt Map
 np.savetxt("polyObst.txt", polygons, delimiter=" ")
 
-#Draw the map
+# Draw the map
 plt.scatter([polygons[0][0]],polygons[0][1],color='red')
 plt.scatter([polygons[1][0]],polygons[1][1],color='green')
 line = [i/1000.0 for i in range(1000)]
@@ -54,6 +51,13 @@ while i < len(polygons):
 
 	i+=1
 
+# nodes = []
+
+# for node in nodes:
+#   plt.scatter([node[1]],[node[2]],color='green')
+#   plt.annotate(int(node[0]),(node[1],node[2]))
+
+
 # graph = []
 
 # for edge in graph:
@@ -61,110 +65,111 @@ while i < len(polygons):
 # 	plt.plot([(1-l)*n1[0]+l*n2[0] for l in line],
 # 			[(1-l)*n1[1]+l*n2[1] for l in line], color='green')
 
-plt.show()
-plt.close()
+# centers =[np.array([1.28648, 6.97368]),
+# np.array([4.37558, 5.48246]),
+# np.array([8.69816, 4.654]),
+# np.array([6.27112, 1.95419]),
+# np.array([2.37327, 2.38304])]
 
-# #Gazebo world
-# world = '''
-# <?xml version="1.0"?> 
-# <sdf version="1.4">
-#   <world name="default">
+# plt.scatter([c[0] for c in centers],[c[1] for c in centers],color='orange')
 
-#   <!-- Ground Plane -->
-#     <include>
-#       <uri>model://ground_plane</uri>
-#     </include>
+# path = [
+# np.array([8, 3]),
+# np.array([7.15207, 5.08285]),
+# np.array([8.09124, 6.76901]),
+# np.array([6.03825, 7.86257]),
+# np.array([3, 7])]
 
-#     <include>
-#       <uri>model://sun</uri>
-#     </include>
-#   </world>
-# </sdf>
-# '''
-# bs_world = bs(world,'xml')
+# for i in range(len(path)-1):
+#   n1 = path[i]
+#   n2 = path[i+1]
+#   plt.plot([(1-l)*n1[0]+l*n2[0] for l in line],
+#       [(1-l)*n1[1]+l*n2[1] for l in line], color='green')
 
-# #Model
-# Tk().withdraw() 
-# filename = askopenfilename(initialdir="../Models")
-# with open(filename, 'r') as f:
-#   model = bs(f,'xml')
 
-# bs_world.include.insert_after(model.model)
+# plt.show()
+# plt.close()
 
-# #Target
-# with open('../Models/target_marble.model', 'r') as f:
-#   target = bs(f,'xml')
+#Gazebo world
+world = '''
+<?xml version="1.0"?> 
+<sdf version="1.4">
+  <world name="default">
 
-# bs_world.include.insert_after(target.model)
+  <!-- Ground Plane -->
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
 
-# polygon_xml ='''
-# <model name='polygon'>
-#     <pose frame=''>{0} {1} 0 0 -0 0</pose>
-# <static>1</static>
-#   </model>
-# '''
+    <include>
+      <uri>model://sun</uri>
+    </include>
+  </world>
+</sdf>
+'''
+bs_world = bs(world,'xml')
 
-# wall_xml = '''
-# <link name='Wall'>
-#       <collision name='Wall_Collision'>
-#         <geometry>
-#           <box>
-#             <size>{3} 0.15 2.5</size>
-#           </box>
-#         </geometry>
-#         <pose frame=''>0 0 1.25 0 -0 0</pose>
-#       </collision>
-#       <visual name='Wall_Visual'>
-#         <pose frame=''>0 0 1.25 0 -0 0</pose>
-#         <geometry>
-#           <box>
-#             <size>{3} 0.15 2.5</size>
-#           </box>
-#         </geometry>
-#         <material>
-#           <script>
-#             <uri>file://media/materials/scripts/gazebo.material</uri>
-#             <name>Gazebo/Bricks</name>
-#           </script>
-#           <ambient>1 1 1 1</ambient>
-#         </material>
-#       </visual>
-#       <pose frame=''>{0} {1} 0 0 0 {2}</pose>
-#     </link>
-# '''
+#Model
+Tk().withdraw() 
+filename = askopenfilename(initialdir="../Models")
+with open(filename, 'r') as f:
+  model = bs(f,'xml')
 
-# i=0
-# while i<len(polygons):
+bs_world.include.insert_after(model.model)
 
-# 	nodes = []
-# 	while 1:
-# 		node = polygons[i]
-# 		if all(node==np.zeros(2)): break
-# 		nodes.append(node)
-# 		i+=1
+#Target
+with open('../Models/target_marble.model', 'r') as f:
+  target = bs(f,'xml')
 
-# 	center = np.mean(nodes,axis=0)
-# 	polygon = bs(polygon_xml.format(center[0],center[1]),'xml')
+bs_world.include.insert_after(target.model)
 
-# 	for j in range(len(nodes)):
+coke_can = '''
+<model name="coke_can">
+	<static>1</static>
+    <link name="link">
+      <collision name="collision">
+        <pose>{0} {1} -0.46 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://coke_can/meshes/coke_can.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <pose>{0} {1} -0.46 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://coke_can/meshes/coke_can.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+  </model>
+'''
+line = [i/20.0 for i in range(20)]
+i = 2
+while i < len(polygons):
+	nodes = []
+	while 1:
+		node = polygons[i]
+		if all(node == np.zeros(2)): break
+		nodes.append(node)
+		i+=1
 
-# 		if j+1 < len(nodes):
-# 			n1, n2 = nodes[j], nodes[j+1]
-# 		else:
-# 			n1, n2 = nodes[j], nodes[0]
+	for j in range(len(nodes)):
 
-# 		n1, n2 = n1-center, n2-center
+		if j+1 < len(nodes):
+			n1, n2 = nodes[j], nodes[j+1]
+		else:
+			n1, n2 = nodes[j], nodes[0]
 
-# 		m = (n1+n2)/2.0
-# 		length = np.linalg.norm(n1-n2)
 
-# 		wall = bs(wall_xml.format(m[0],m[1],
-# 			-np.sign(n1[0]-m[0])*angle(n1-m,np.array([1,0])),length),'xml')
+		for point in [(1-l)*n1+l*n2 for l in line]:
 
-# 		polygon.pose.insert_after(wall)
+			bs_coke_can = bs(coke_can.format(point[0],point[1]),'xml')
+			bs_world.include.insert_after(bs_coke_can.model)
 
-# 	bs_world.include.insert_after(polygon)
-# 	i+=1
+	i+=1
 
-# with open('../Worlds/polyObst.world','wb') as f:
-# 	f.write(bs_world.prettify())
+with open('../Worlds/polyObst.world','wb') as f:
+	f.write(bs_world.prettify())
