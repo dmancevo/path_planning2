@@ -11,5 +11,5 @@ target_link_libraries(discrete ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES})
 add_library(kinPoint SHARED kinPoint.cc A_star/A_star.cpp A_star/node.cpp)
 target_link_libraries(kinPoint ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES})
 
-add_library(dynPoint SHARED dynPoint.cc A_star/A_star.cpp A_star/node.cpp)
-target_link_libraries(dynPoint ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES})
+add_library(dynamicPoint SHARED dynamicPoint.cc DIMT_RRT/WaypointDynamicFollower.cpp)
+target_link_libraries(dynamicPoint ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES})
