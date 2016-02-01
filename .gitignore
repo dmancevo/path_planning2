@@ -1,6 +1,2 @@
 
 build/
-
-.idea/
-DIMT_RRT/main.cpp
-DIMT_RRT/CMakeLists.txt
