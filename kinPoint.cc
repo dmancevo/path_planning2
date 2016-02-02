@@ -45,7 +45,7 @@ namespace gazebo
           boost::bind(&KinematicPointNavigation::OnUpdate, this, _1));
 
       //path planner
-      V_graph v_graph("Maps/polyObst.txt", 0.1);
+      V_graph v_graph("Maps/polyObst.txt", 1);
       path = v_graph.shortest_path();
       t=path.size()-1;
       departure = math::Vector3(path[t].first,path[t].second,0.05);

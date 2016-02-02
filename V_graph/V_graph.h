@@ -17,7 +17,6 @@ private:
 	std::vector<std::vector<std::pair<double,double> > >graph_polygons;
 	void loadPolygons(std::string polyObstMap);
 	void enlarge(double eta);
-	int O(int k, int a, int b);
-	int O1(int a, int b);
+	int validPath(int a, int b);
 	std::vector<int> Dijkstra();
 };

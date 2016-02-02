@@ -87,6 +87,9 @@ std::vector<int> V_graph::Dijkstra(){
 
 V_graph::V_graph(std::string polyObstMap, double eta){
 
+	//Increase eta
+	eta *= 1000;
+
 	//Load polygons
 	this->loadPolygons(polyObstMap);
 
@@ -118,36 +121,15 @@ V_graph::V_graph(std::string polyObstMap, double eta){
 		adjList.push_back(*neighbors);
 	}
 
-	//Connect edges belonging to the same polygon
-	//by connecting the nodes that form the convex hull
-	int b, ma, mb;
-	for (int k=0;k<polygons.size();k+=1){
-		for(int a=0;a<polygons[k].size();a+=1){
-
-			if (a+1<polygons[k].size())
-				b = a+1;
-			else
-				b = 0;
-
-			ma = map[k][a];
-			mb = map[k][b];
-
-			if(this->O(k,a,b)==0 && O1(ma,mb)==0){
-				adjList[ma].push_back(mb);
-				adjList[mb].push_back(ma);
-			}
-		}
-	}
-
 	//Connect edges belonging to different polygons
 	int k1, k2;
 	for (int i=0;i<nodeCoords.size();i+=1){
 		for (int j=0;j<nodeCoords.size();j+=1){
 			k1 = rmap[i];
 			k2 = rmap[j];
-			if (k1==k2)
-				continue;
-			if(O1(i,j)==0)
+			// if (k1==k2)
+			// 	continue;
+			if(this->validPath(i,j)==0)
 				adjList[i].push_back(j);
 
 		}
@@ -155,52 +137,10 @@ V_graph::V_graph(std::string polyObstMap, double eta){
 
 };
 
-//Determine if a straight line between a and b,
-//where a and b belong to the same polygon,
-//cuts through the interior of such polygon.
-//If so return 1 else 0
-int V_graph::O(int k, int a, int b){
-
-	std::pair<double,double> *n1,*n2, w;
-	double w0, wDot;
-	int above, below;
-
-	//Line between n1 and n2
-	n1 = &polygons[k][a];
-	n2 = &polygons[k][b];
-
-	//Separating hyperplane
-	w = std::make_pair(n2->second-n1->second,n1->first-n2->first);
-	w0 = -(w.first*n1->first+w.second*n1->second);
-
-	//Check if line cuts through the polygon
-	above = 0;
-	below = 0;
-	for (int i=0;i<polygons[k].size();i+=1){
-		if(i==a || i==b)
-			continue;
-
-		wDot = (w.first*polygons[k][i].first +
-			w.second*polygons[k][i].second) + w0;
-
-		if (wDot > 0)
-			above += 1;
-		else if (wDot < 0)
-			below += 1;
-
-		if (above > 0 && below > 0)
-			return 1;
-
-	}
-
-	return 0;
-
-};
-
 //Determine if there is a polygon between a and b
 //If so return 1 else 0
 //reference: https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection#Mathematics
-int V_graph::O1(int a, int b){
+int V_graph::validPath(int a, int b){
 
 	//Check each polygon
 	std::pair<double,double> p, *n1, *n2;
@@ -256,7 +196,6 @@ void V_graph::enlarge(double eta){
 	std::vector<std::pair<double,double> > centers;
 	double cx, cy;
 	for (int k=0;k<polygons.size();k+=1){
-
 		cx=0;
 		cy=0;
 		for (int a=0;a<polygons[k].size();a+=1){
@@ -269,19 +208,84 @@ void V_graph::enlarge(double eta){
 	}
 
 	//Translate polygon nodes
-	for (int k=0;k<polygons.size();k+=1){
-		for (int a=0;a<polygons[k].size();a+=1){
-			graph_polygons[k][a].first = polygons[k][a].first * (1+eta) +
-				centers[k].first * -eta;
+	double dist, dist2,alpha,beta;
+	std::pair<double,double> *left, *node, *right, p1, p2, t_center;
+	for(int k=0;k<polygons.size();k++){
+		for(int a=0;a<polygons[k].size();a++){
 
-			graph_polygons[k][a].second = polygons[k][a].second * (1+eta) +
-				centers[k].second * -eta;
+			node = &polygons[k][a];
+
+			//Get the nodes to the left and right of my node
+			if (a==0)
+				left = &polygons[k][polygons[k].size()-1];
+			else
+				left = &polygons[k][a-1];
+
+			if (a+1<polygons[k].size())
+				right = &polygons[k][a+1];
+			else
+				right = &polygons[k][0];
+
+			//Compute center of triangle
+			alpha = 1.0 - 0.001/(sqrt(pow(node->first-left->first,2)+
+				pow(node->second-left->second,2)));
+
+			beta = 1.0 - 0.001/(sqrt(pow(node->first-right->first,2)+
+				pow(node->second-right->second,2)));
+
+			p1 = std::make_pair((1-alpha)*left->first + alpha*node->first,
+				(1-alpha)*left->second + alpha*node->second);
+
+			p2 = std::make_pair((1-beta)*right->first + beta*node->first,
+				(1-beta)*right->second + beta*node->second);
+
+			// std::cout<<"np.array(["<<p1.first<<", "<<p1.second<<"]),\n";
+			// std::cout<<"np.array(["<<p2.first<<", "<<p2.second<<"]),\n";
+
+			t_center = std::make_pair((p1.first+node->first+p2.first)/3.0,
+				(p1.second+node->second+p2.second)/3.0);
+
+			// std::cout<<"np.array(["<<t_center.first<<", "<<t_center.second<<"]),\n";
+
+			//Euclidean distance between polygon center and node
+			dist = sqrt(pow(node->first-centers[k].first,2)+
+				pow(node->second-centers[k].second,2));
+
+			//Euclidean distance between polygon center and triangle center
+			dist2 = sqrt(pow(t_center.first-centers[k].first,2)+
+				pow(t_center.second-centers[k].second,2));
+
+			//When the three points lay on a line, pull the "triangle" center
+			//closer to the center of the polygon by a small amount
+			if (dist == dist2){
+				t_center.first = t_center.first * (1+0.0001) +
+					centers[k].first * -0.0001;
+
+				t_center.first = t_center.second * (1+0.0001) +
+					centers[k].second * -0.0001;
+
+				dist2 -= 0.0001;
+			}
+
+			//Translate node as appropiate
+			if (dist > dist2){
+				graph_polygons[k][a].first = polygons[k][a].first * (1+eta) +
+					t_center.first * -eta;
+
+				graph_polygons[k][a].second = polygons[k][a].second * (1+eta) +
+					t_center.second * -eta;
+
+			} else{
+
+				graph_polygons[k][a].first = t_center.first * (1+eta) +
+					polygons[k][a].first * -eta;
+
+				graph_polygons[k][a].second = t_center.second * (1+eta) +
+					polygons[k][a].second * -eta;
+			}
+
 		}
 	}
-
-	//Print centers
-	// for (int k=0;k<polygons.size();k+=1)
-	// 	std::cout<<"np.array(["<<centers[k].first<<", "<<centers[k].second<<"]),\n";
 
 };
 
