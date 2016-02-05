@@ -3,12 +3,12 @@
 <model name="target_marble">
   <static>true</static>
   <link name="link">
-    <pose>5 5 1.30 0 0 0</pose>
+    <pose>8 3 0.16 0 0 0</pose>
 
     <collision name="collision">
       <geometry>
         <sphere>
-          <radius>0.25</radius>
+          <radius>0.05</radius>
         </sphere>
       </geometry>
     </collision>
@@ -16,7 +16,7 @@
     <visual name="visual">
       <geometry>
         <sphere>
-          <radius>0.25</radius>
+          <radius>0.05</radius>
         </sphere>
       </geometry>
       <material>

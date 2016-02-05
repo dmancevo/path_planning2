@@ -3,8 +3,7 @@
 #include <gazebo/physics/physics.hh>
 #include <gazebo/common/common.hh>
 #include <stdio.h>
-#include "A_star/A_star.h"
-#include "A_star/load_map.h"
+#include "V_graph/V_graph.h"
 
 namespace gazebo
 {
@@ -17,18 +16,16 @@ namespace gazebo
       std::string chassis = "chassis";
 
       //Keep track of iteration and path step.
-      // unsigned long long int i = 0;
-      unsigned int t = 0;
+      unsigned int t=0;
+      double alpha=0;
 
       //Velocity cap.
       float v_cap = 4.0;
 
       //Path to follow.
-      int x [10] = {1,2,4,6,8,5,5,4,3,1};
-      int y [10] = {1,6,8,5,5,4,3,1,4,3};
-      // std::vector<std::pair<int,int>> path;
+      std::vector<std::pair<double,double> > path;
       math::Vector3 target;
-      math::Vector3 v_to_target;
+      math::Vector3 departure;
 
       //Keep track of current position.
       math::Vector3 position;
@@ -48,35 +45,33 @@ namespace gazebo
           boost::bind(&KinematicPointNavigation::OnUpdate, this, _1));
 
       //path planner
-
+      V_graph v_graph("Maps/polyObst.txt", 1);
+      path = v_graph.shortest_path();
+      t=path.size()-1;
+      departure = math::Vector3(path[t].first,path[t].second,0.05);
+      target = math::Vector3(path[t-1].first,path[t-1].second,0.05);
     }
 
     // Called by the world update start event
     public: void OnUpdate(const common::UpdateInfo & /*_info*/)
     {
 
-      //Acquire position and set direction towards current target.
-      math::Pose pose = this->model->GetWorldPose();
-      position = pose.pos;
-      target = math::Vector3(x[t],y[t],position.z);
-      v_to_target = target - position;
-
-      //Normalize, cap and set velocity towards target.
-      v_to_target = v_cap * v_to_target.Normalize();
-
-      this->model->SetLinearVel(v_to_target);
-      // velocity = v_to_target;
-
-      //Update position.
-      // position = position + (0.0001 * velocity);
-      // this->model->SetLinkWorldPose(math::Pose(position.x,
-      //     position.y,position.z,0,0,0), chassis);
-
-      if(position.Distance(target) < 1){
-        t+=1;
-        t = t % 10;
+      if(position.Distance(target) < 0.01 && t>0){
+        departure = math::Vector3(path[t].first,path[t].second,0.05);
+        target = math::Vector3(path[t-1].first,path[t-1].second,0.05);
+        t--;
+        alpha=0;
       }
-        
+      
+      if(position.Distance(target) > 0.01){
+        //Update position.
+        position = departure * (1-alpha/2000) + target * (alpha/2000);
+        this->model->SetLinkWorldPose(math::Pose(position.x,
+            position.y,position.z,0,0,0), chassis);
+
+        alpha +=1;
+      }
+      
     }
 
 

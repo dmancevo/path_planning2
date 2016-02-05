@@ -8,7 +8,7 @@ list(APPEND CMAKE_CXX_FLAGS "${GAZEBO_CXX_FLAGS}")
 add_library(discrete SHARED discrete.cc A_star/A_star.cpp A_star/node.cpp)
 target_link_libraries(discrete ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES})
 
-add_library(kinPoint SHARED kinPoint.cc A_star/A_star.cpp A_star/node.cpp)
+add_library(kinPoint SHARED kinPoint.cc V_graph/V_graph.cpp)
 target_link_libraries(kinPoint ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES})
 
 add_library(dynamicPoint SHARED dynamicPoint.cc DIMT_RRT/WaypointDynamicFollower.cpp)
