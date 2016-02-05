@@ -97,19 +97,16 @@ V_graph::V_graph(std::string polyObstMap, double eta){
 	this->enlarge(eta);
 
 	//Track keeping
-	int map[20][20];
-	int rmap[40];
+	int map[40][20];
 	int m = 0;
 
 	//Node coordinates
 	nodeCoords.push_back(start);
-	rmap[0] = -1;
 	for (int k=0;k<polygons.size();k+=1){
 		for (int a=0;a<polygons[k].size();a+=1){
 			nodeCoords.push_back(graph_polygons[k][a]);
 			m+=1;
 			map[k][a] = m;
-			rmap[m] = k;
 		}
 	}
 	nodeCoords.push_back(end);
@@ -121,14 +118,11 @@ V_graph::V_graph(std::string polyObstMap, double eta){
 		adjList.push_back(*neighbors);
 	}
 
-	//Connect edges belonging to different polygons
-	int k1, k2;
+	//Connect edges
 	for (int i=0;i<nodeCoords.size();i+=1){
 		for (int j=0;j<nodeCoords.size();j+=1){
-			k1 = rmap[i];
-			k2 = rmap[j];
-			// if (k1==k2)
-			// 	continue;
+			if (i==j)
+				continue;
 			if(this->validPath(i,j)==0)
 				adjList[i].push_back(j);
 
@@ -142,73 +136,115 @@ V_graph::V_graph(std::string polyObstMap, double eta){
 //reference: https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection#Mathematics
 int V_graph::validPath(int a, int b){
 
+	std::pair<double, double> a_point, b_point;
+
 	//Check each polygon
-	std::pair<double,double> p, *n1, *n2;
-	double x1,y1,x2,y2,x3,y3,x4,y4,den,px,py,alpha1,alpha2;
 	for (int i=0; i<polygons.size(); i+=1){
 		for (int j=0; j<polygons[i].size(); j+=1){
 
-			n1 = &polygons[i][j];
+			a_point = std::make_pair(nodeCoords[a].first,nodeCoords[a].second);
+			b_point = std::make_pair(nodeCoords[b].first,nodeCoords[b].second);
 
-			if(j+1 < polygons[i].size()){
-				n2 = &polygons[i][j+1];
-			} else{
-				n2 = &polygons[i][0];
-			}
-
-			x1 = nodeCoords[a].first;
-			y1 = nodeCoords[a].second;
-			x2 = nodeCoords[b].first;
-			y2 = nodeCoords[b].second;
-			x3 = n1->first;
-			y3 = n1->second;
-			x4 = n2->first;
-			y4 = n2->second;
-
-			den = ((x1-x2)*(y3-y4) - (y1-y2)*(x3-x4));
-
-			//Check if lines are parallel
-			if (den==0)
-				continue;
-
-			//Determine point of intersection
-			px = ((x1*y2-y1*x2)*(x3-x4) - (x1-x2)*(x3*y4-y3*x4) )/den;
-			py = ((x1*y2-y1*x2)*(y3-y4) - (y1-y2)*(x3*y4-y3*x4))/den;
-
-			p = std::make_pair(px,py);
-
-			//Bezier parameters
-			alpha1 = (px-x2)/(x1-x2);
-			alpha2 = (px-x4)/(x3-x4);
-
-			if(alpha1 < 0.999 && alpha1 > 0.001
-				&& alpha2 < 0.999 && alpha2 > 0.001)
+			if (this->intersect(a_point,b_point,i,j,true)==1)
 				return 1;
+		}
+	}
+
+	//Check each enlarged polygon
+	// for (int i=0; i<graph_polygons.size(); i+=1){
+	// 	for (int j=0; j<graph_polygons[i].size(); j+=1){
+
+	// 		a_point = std::make_pair(nodeCoords[a].first,nodeCoords[a].second);
+	// 		b_point = std::make_pair(nodeCoords[b].first,nodeCoords[b].second);
+
+	// 		if (this->intersect(a_point,b_point,i,j,false,0.001)==1)
+	// 			return 1;
+	// 	}
+	// }
+
+	return 0;
+};
+
+int V_graph::intersect(std::pair<double,double> a_point, std::pair<double,double> b_point, int i, int j, bool e){
+
+	std::pair<double,double> p, *n1, *n2;
+	double x1,y1,x2,y2,x3,y3,x4,y4,den,px,py,alpha1,alpha2;
+
+	if (e){
+		n1 = &polygons[i][j];
+		if(j+1 < polygons[i].size()){
+			n2 = &polygons[i][j+1];
+		} else{
+			n2 = &polygons[i][0];
+		}
+	} else{
+		n1 = &graph_polygons[i][j];
+		if(j+1 < graph_polygons[i].size()){
+			n2 = &graph_polygons[i][j+1];
+		} else{
+			n2 = &graph_polygons[i][0];
+		}
+	}
+
+	x1 = a_point.first;
+	y1 = a_point.second;
+	x2 = b_point.first;
+	y2 = b_point.second;
+
+	x3 = n1->first;
+	y3 = n1->second;
+	x4 = n2->first;
+	y4 = n2->second;
+
+	den = ((x1-x2)*(y3-y4) - (y1-y2)*(x3-x4));
+
+	//Check if lines are parallel
+	if (den==0)
+		return 0;
+
+	//Determine point of intersection
+	px = ((x1*y2-y1*x2)*(x3-x4) - (x1-x2)*(x3*y4-y3*x4) )/den;
+	py = ((x1*y2-y1*x2)*(y3-y4) - (y1-y2)*(x3*y4-y3*x4))/den;
+
+	p = std::make_pair(px,py);
+
+	//Bezier parameters
+	alpha1 = (px-x2)/(x1-x2);
+	alpha2 = (px-x4)/(x3-x4);
+
+	if(alpha1 < 1 && alpha1 > 0
+		&& alpha2 < 1 && alpha2 > 0)
+		return 1;
+	else
+		return 0;
+
+};
+
+bool V_graph::in_polygon(std::pair<double,double> point){
+
+	std::pair<double, double> ray_origin = std::make_pair(-1,-1);
+	int num_intersections = 0;
+
+	//Check each polygon
+	for (int i=0; i<polygons.size(); i+=1){
+		for (int j=0; j<polygons[i].size(); j+=1){
+
+			num_intersections += this->intersect(point,ray_origin,i,j,true);
 
 		}
 	}
-	return 0;
+
+	if(num_intersections%2==0)
+		return false;
+	else
+		return true;
+
 };
 
 void V_graph::enlarge(double eta){
 
-	//Compute polygon centers
-	std::vector<std::pair<double,double> > centers;
-	double cx, cy;
-	for (int k=0;k<polygons.size();k+=1){
-		cx=0;
-		cy=0;
-		for (int a=0;a<polygons[k].size();a+=1){
-			cx += polygons[k][a].first;
-			cy += polygons[k][a].second;
-		}
-		cx = cx/polygons[k].size();
-		cy = cy/polygons[k].size();
-		centers.push_back(std::make_pair(cx,cy));
-	}
-
 	//Translate polygon nodes
-	double dist, dist2,alpha,beta;
+	double alpha,beta;
 	std::pair<double,double> *left, *node, *right, p1, p2, t_center;
 	for(int k=0;k<polygons.size();k++){
 		for(int a=0;a<polygons[k].size();a++){
@@ -239,36 +275,13 @@ void V_graph::enlarge(double eta){
 			p2 = std::make_pair((1-beta)*right->first + beta*node->first,
 				(1-beta)*right->second + beta*node->second);
 
-			// std::cout<<"np.array(["<<p1.first<<", "<<p1.second<<"]),\n";
-			// std::cout<<"np.array(["<<p2.first<<", "<<p2.second<<"]),\n";
-
 			t_center = std::make_pair((p1.first+node->first+p2.first)/3.0,
 				(p1.second+node->second+p2.second)/3.0);
 
-			// std::cout<<"np.array(["<<t_center.first<<", "<<t_center.second<<"]),\n";
-
-			//Euclidean distance between polygon center and node
-			dist = sqrt(pow(node->first-centers[k].first,2)+
-				pow(node->second-centers[k].second,2));
-
-			//Euclidean distance between polygon center and triangle center
-			dist2 = sqrt(pow(t_center.first-centers[k].first,2)+
-				pow(t_center.second-centers[k].second,2));
-
-			//When the three points lay on a line, pull the "triangle" center
-			//closer to the center of the polygon by a small amount
-			if (dist == dist2){
-				t_center.first = t_center.first * (1+0.0001) +
-					centers[k].first * -0.0001;
-
-				t_center.first = t_center.second * (1+0.0001) +
-					centers[k].second * -0.0001;
-
-				dist2 -= 0.0001;
-			}
+			// std::cout<<"np.array(["<<this->in_polygon(t_center)<<", "<<t_center.first<<", "<<t_center.second<<"]),\n";
 
 			//Translate node as appropiate
-			if (dist > dist2){
+			if (this->in_polygon(t_center)){
 				graph_polygons[k][a].first = polygons[k][a].first * (1+eta) +
 					t_center.first * -eta;
 
