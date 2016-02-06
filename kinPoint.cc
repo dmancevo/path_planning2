@@ -20,7 +20,7 @@ namespace gazebo
       double alpha=0;
 
       //Velocity cap.
-      float v_cap = 4.0;
+      float v_cap = 1.0;
 
       //Path to follow.
       std::vector<std::pair<double,double> > path;
@@ -45,7 +45,7 @@ namespace gazebo
           boost::bind(&KinematicPointNavigation::OnUpdate, this, _1));
 
       //path planner
-      V_graph v_graph("Maps/polyObst.txt", 1);
+      V_graph v_graph("Maps/polygObst2.txt", 1);
       path = v_graph.shortest_path();
       t=path.size()-1;
       departure = math::Vector3(path[t].first,path[t].second,0.05);

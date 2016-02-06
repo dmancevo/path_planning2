@@ -18,5 +18,7 @@ private:
 	void loadPolygons(std::string polyObstMap);
 	void enlarge(double eta);
 	int validPath(int a, int b);
+	int intersect(std::pair<double, double> a_point, std::pair<double, double> b_point, int i, int j, bool e);
+	bool in_polygon(std::pair<double,double> point);
 	std::vector<int> Dijkstra();
 };
