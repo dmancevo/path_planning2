@@ -11,6 +11,7 @@ public:
 	std::vector<std::vector<int> > adjList;
 	std::vector<std::vector<std::pair<double,double> > >polygons;
 	std::vector<std::pair<double,double> > shortest_path();
+	int validPath(std::pair<double, double> a_point, std::pair<double, double> b_point);
 	std::pair<double,double> start;
 	std::pair<double,double> end;
 private:
