@@ -244,7 +244,6 @@ ddParams DDWPFollower::computePramMaxVelInLimits(double theta, std::pair<double,
             y += v_c * sin(theta1) * this->tick;
             inLimits = this->inLimit(x, y);
             if (!inLimits) {
-                std::cout<<"not in lim\n";
                 break;
             }
             theta1 += this->tick * params.w;

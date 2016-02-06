@@ -19,7 +19,6 @@ private:
     double v_max;
     double w_max;
     double time = 0;
-    bool finished = false;
     std::vector<std::pair<double, double>> points;
     unsigned long size;
     bool limitedField;
@@ -44,6 +43,7 @@ public:
     diffDrivePose getNextPose();
     double getTime() {return this->time;};
     int next_point_id = -1;
+    bool finished = false;
 };
 
 
