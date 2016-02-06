@@ -2,6 +2,8 @@
 #include <iostream>
 #include <vector>
 
+#ifndef V_GRAPH_H
+#define V_GRAPH_H
 
 class V_graph{
 
@@ -23,3 +25,5 @@ private:
 	bool in_polygon(std::pair<double,double> point);
 	std::vector<int> Dijkstra();
 };
+
+#endif

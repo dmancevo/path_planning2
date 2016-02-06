@@ -8,7 +8,7 @@
 
 
 DDWPFollower::DDWPFollower(double tick, std::vector<std::pair<double, double>> points, double theta,
-                           double v_max, double w_max, bool limitedField,
+                           double v_max, double w_max, V_graph *vis_graph, bool limitedField,
                            std::pair<double, double> x_lim, std::pair<double, double> y_lim) {
     this->tick = tick;
     this->points = points;
@@ -18,6 +18,7 @@ DDWPFollower::DDWPFollower(double tick, std::vector<std::pair<double, double>> p
     this->x_lim = x_lim;
     this->y_lim = y_lim;
     this->size = this->points.size();
+    this->vis_graph = vis_graph;
 
     //theta
     if (theta < 0) {
@@ -227,7 +228,7 @@ ddParams DDWPFollower::computePramMaxVelInLimits(double theta, std::pair<double,
     double v_step = params.v/double(10);
     double v_c = params.v;
     double angle_diff;
-    double x, y;
+    double x, y, x_p, y_p;
     double theta1;
     bool inLimits;
     ddParams param_temp;
@@ -236,13 +237,17 @@ ddParams DDWPFollower::computePramMaxVelInLimits(double theta, std::pair<double,
         angle_diff = params.angle_diff;
         x = p_curr.first;
         y = p_curr.second;
+        x_p = x;
+        y_p = y;
         theta1 = theta;
         inLimits = true;
 
         while (fabs(angle_diff) > EPS_ANG) {
+            x_p = x;
+            y_p = y;
             x += v_c * cos(theta1) * this->tick;
             y += v_c * sin(theta1) * this->tick;
-            inLimits = this->inLimit(x, y);
+            inLimits = this->inLimit(x, y) && !this->inObstacle({x_p, y_p}, {x, y});
             if (!inLimits) {
                 break;
             }
@@ -268,4 +273,10 @@ ddParams DDWPFollower::computePramMaxVelInLimits(double theta, std::pair<double,
     params.v = v_c;
 
     return params;
+}
+
+bool DDWPFollower::inObstacle(std::pair<double,double> prev_p, std::pair<double,double> new_p) {
+    int valid = this->vis_graph->validPath(prev_p, new_p);//1 - polygon, 0 - no polygons
+    return valid == 1;
+    //return false;
 }

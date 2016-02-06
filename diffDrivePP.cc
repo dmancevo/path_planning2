@@ -16,7 +16,8 @@ namespace gazebo
     public:
         std::string chassis = "chassis"; //Vehicle chasis.
         diffDriveWP wp;
-        DDWPFollower ddwpFollower;
+        V_graph *vis_graph = new V_graph("Maps/polyObst.txt", 0.1);
+        DDWPFollower ddwpFollower = DDWPFollower(vis_graph);
         double height = 0.16;
 
     public: void Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
@@ -29,20 +30,15 @@ namespace gazebo
             this->updateConnection = event::Events::ConnectWorldUpdateBegin(
                     boost::bind(&DiffDrivePPNavigation::OnUpdate, this, _1));
 
-            V_graph vis_graph = V_graph("Maps/polyObst.txt", 0.0001);
-            //load waypoints
-            //this->wp = loadDiffDriveWaipoint("Maps/waypoint_dd.txt");
-
 
             //set position to the first point
-            std::pair<double,double> start = vis_graph.start;
-
-            std::vector<std::pair<double,double> > shortest_path = vis_graph.shortest_path();
+            std::pair<double,double> start = this->vis_graph->start;
+            std::vector<std::pair<double,double> > shortest_path = this->vis_graph->shortest_path();
             std::reverse(shortest_path.begin(), shortest_path.end());
 
             this->model->SetLinkWorldPose(math::Pose(start.first, start.second, height,0,0,0), chassis);
 
-            this->ddwpFollower = DDWPFollower(0.001, shortest_path, 0, 0.1, 1, true, {0,10}, {0,10});
+            this->ddwpFollower = DDWPFollower(0.001, shortest_path, 0, 0.1, 1, vis_graph, true, {-50,50}, {-50,50});
 
         }
 

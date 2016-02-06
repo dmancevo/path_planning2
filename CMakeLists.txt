@@ -16,3 +16,6 @@ target_link_libraries(dynamicPoint ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES})
 
 add_library(kinCar SHARED kinCar.cc V_graph/V_graph.cpp)
 target_link_libraries(kinCar ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES})
+
+add_library(diffDrivePP SHARED diffDrivePP.cc DIFF_DRIVE/DDWPFollower.cpp V_graph/V_graph.cpp)
+target_link_libraries(diffDrivePP ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES})
