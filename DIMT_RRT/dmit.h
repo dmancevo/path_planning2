@@ -79,6 +79,13 @@ std::pair<double,std::pair<double,double>> findMinTimeOneDOF(double p1, double p
 
     T = t_a1 + t_a2 + t_v;
 
+    if(a_max == 0){
+        t_a1 = 0;
+        t_a2 = 0;
+        t_v = (p2 - p1) / v_lim;
+        T = t_a1 + t_a2 + t_v;
+    }
+
 
 
     //compute limits of infeasible time interval
@@ -158,9 +165,9 @@ std::vector<segment> findFixedTimeTrajectory(
 
     double q = -0.5 * (b + sign_b * sqrt(pow(b, 2) - 4 * a * c));
     double a1_1 = q / a;
-    double a1_2 = c / q;
+    double a1_2 = (q != 0)? c / q : 0;
 
-    double a1 = (fabs(a1_1) > fabs(a1_2))? a1_1 : a1_2;
+    double a1 = (fabs(a1_1) > fabs(a1_2))? a1_1: a1_2;
     double a2 = -a1;
     double t_a1 = 0.5 * ((v2 - v1)/a1 + T);
     double t_a2 = T - t_a1;
@@ -171,19 +178,21 @@ std::vector<segment> findFixedTimeTrajectory(
     double v_t_a1 = v1 + a1 * t_a1;
 
 
-    if (fabs(v_t_a1) > v_max) {
+    if (fabs(v_t_a1) > v_max || isnan(v_t_a1)) {
         int sign_a1 = (a1 < 0)? -1 : 1;
         v_lim = sign_a1 * v_max;
         a1 = (pow(v_lim - v1, 2) + pow(v_lim - v2, 2))/(2 * (v_lim * T - (p2 - p1)));
         a2 = -a1;
         //(15)-(17)
-        t_a1 = (v_lim - v1) / a1;
-        t_a2 = (v2 - v_lim) / a2;
-        if (t_a1 < 0) {
+        if (a1 == 0 || isnan(a1)) {
+            t_a1 = 0;
+            t_a2 = 0;
+            t_v = (p2 - p1) / v_lim;
+        } else {
+            t_a1 = (v_lim - v1) / a1;
+            t_a2 = (v2 - v_lim) / a2;
+            t_v = (pow(v1, 2) + pow(v2, 2) - 2 * pow(v_lim, 2)) / (2 * v_lim * a1) + (p2 - p1) / v_lim;
         }
-        if (t_a2 < 0) {
-        }
-        t_v = (pow(v1, 2) + pow(v2, 2) - 2 * pow(v_lim, 2)) / (2 * v_lim * a1) + (p2 - p1) / v_lim;
     }
 
     std::vector<segment> result;
