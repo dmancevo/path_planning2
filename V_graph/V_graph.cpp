@@ -150,20 +150,23 @@ int V_graph::validPath(int a, int b){
 		}
 	}
 
-	//Check each enlarged polygon
-	// for (int i=0; i<graph_polygons.size(); i+=1){
-	// 	for (int j=0; j<graph_polygons[i].size(); j+=1){
-
-	// 		a_point = std::make_pair(nodeCoords[a].first,nodeCoords[a].second);
-	// 		b_point = std::make_pair(nodeCoords[b].first,nodeCoords[b].second);
-
-	// 		if (this->intersect(a_point,b_point,i,j,false,0.001)==1)
-	// 			return 1;
-	// 	}
-	// }
-
 	return 0;
 };
+
+//a_point and b_point: coordinates of two points in the map.
+//return 1 if there is a polygon between them else 0.
+int V_graph::validPath(std::pair<double, double> a_point, std::pair<double, double> b_point){
+		//Check each polygon
+	for (int i=0; i<polygons.size(); i+=1){
+		for (int j=0; j<polygons[i].size(); j+=1){
+
+			if (this->intersect(a_point,b_point,i,j,true)==1)
+				return 1;
+		}
+	}
+
+	return 0;
+}
 
 int V_graph::intersect(std::pair<double,double> a_point, std::pair<double,double> b_point, int i, int j, bool e){
 
