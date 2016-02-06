@@ -4,3 +4,5 @@ build/
 .idea/
 DIMT_RRT/main.cpp
 DIMT_RRT/CMakeLists.txt
+DIFF_DRIVE/main.cpp
+DIFF_DRIVE/CMakeLists.txt
