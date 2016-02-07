@@ -11,7 +11,7 @@ target_link_libraries(discrete ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES})
 add_library(kinPoint SHARED kinPoint.cc V_graph/V_graph.cpp)
 target_link_libraries(kinPoint ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES})
 
-add_library(dynamicPoint SHARED dynamicPoint.cc DIMT_RRT/WaypointDynamicFollower.cpp)
+add_library(dynamicPoint SHARED dynamicPoint.cc DIMT_RRT/WaypointDynamicFollower.cpp V_graph/V_graph.cpp)
 target_link_libraries(dynamicPoint ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES})
 
 add_library(kinCar SHARED kinCar.cc V_graph/V_graph.cpp)

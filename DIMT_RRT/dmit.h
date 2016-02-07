@@ -7,6 +7,8 @@
 #include <random>
 #include <iostream>
 #include "dp_structs.h"
+#include "WaypointDynamicFollower.h"
+#include "../V_graph/V_graph.h"
 
 
 std::pair<double, double> maxForEach(std::pair<double, double> p1, std::pair<double, double> p2, double max) {
@@ -20,7 +22,7 @@ std::pair<double, double> maxForEach(std::pair<double, double> p1, std::pair<dou
         maxima.second = max/sqrt(b*b + 1);
         maxima.first = b * maxima.second;
     } else if (x_delta == 0 && y_delta == 0) {
-        double max1 = sqrt(max/2);
+        double max1 = max/sqrt(2);
         maxima.first = max1;
         maxima.second = max1;
     } else if (x_delta != 0) {
@@ -265,24 +267,24 @@ std::vector<std::pair<double,double>> wayPointVelocities(std::vector<std::pair<d
         v_x = (delta_x_prev/prev_length + delta_x_next/next_length)/(1/prev_length + 1/next_length);
         v_y = (delta_y_prev/prev_length + delta_y_next/prev_length)/(1/prev_length + 1/next_length);
 
-        if (v_x > coeff[i-1] * v_max.first) {
-            if (v_y > coeff[i-1] * v_max.second) {
+        if (fabs(v_x) > coeff[i-1] * v_max.first) {
+            if (fabs(v_y) > coeff[i-1] * v_max.second) {
                 b = v_y/v_x;
-                if (b < 1) {
-                    v_x = coeff[i-1] * v_max.first;
+                if (fabs(b) < 1) {
+                    v_x = (v_x < 0)? -coeff[i-1] * v_max.first : coeff[i-1] * v_max.first;
                     v_y = b * v_x;
                 } else {
-                    v_y = coeff[i-1] *v_max.second;
+                    v_y = (v_y < 0)? -coeff[i-1] *v_max.second : coeff[i-1] *v_max.second;
                     v_x = v_y/b;
                 }
             } else {
                 b = v_y/v_x;
-                v_x = coeff[i-1] *v_max.first;
+                v_x = (v_x < 0)? -coeff[i-1] * v_max.first : coeff[i-1] * v_max.first;
                 v_y = b * v_x;
             }
-        } else if (v_y > coeff[i-1] *v_max.second) {
+        } else if (fabs(v_y) > coeff[i-1] *v_max.second) {
             b = v_x/v_y;
-            v_y = coeff[i-1] *v_max.second;
+            v_y = (v_y < 0)? -coeff[i-1] *v_max.second : coeff[i-1] *v_max.second;
             v_x = b * v_y;
         }
         velocities.push_back({v_x,v_y});
@@ -374,6 +376,173 @@ std::pair<std::vector<segment>,std::vector<segment>> waypointFollowing(std::vect
     return segmentTrajectory;
 }
 
+std::pair<std::vector<segment>,std::vector<segment>> waypointFollowingWithStops2(
+        std::vector<std::pair<double,double>> points,
+        std::pair<double, double> vel_start,
+        std::pair<double, double> vel_finish,
+        double v_max, double a_max) {
+
+    double time = 0;
+    std::vector<trajectory> wayPointTrajectory;
+
+    double v_x, v_y, b, a_x, a_y, c;
+    for (int i = 0; i < points.size() - 1; ++i) {
+        //compute perfect velocities
+        double delta_x = points[i+1].first - points[i].first;
+        double delta_y = points[i+1].second - points[i].second;
+        double sign_v_x = (delta_x < 0)? -1 : 1;
+        double sign_v_y = (delta_y < 0)? -1 : 1;
+        if (delta_x == 0) {
+            v_x = 0;
+            if (delta_y == 0) {
+                v_y = 0;
+            } else {
+                v_y = sign_v_y * v_max;
+            }
+        } else {
+            if (delta_y == 0) {
+                v_y = 0;
+                v_x = sign_v_x * v_max;
+            } else {
+                b = delta_x/delta_y;
+                v_y = sign_v_y * v_max/sqrt(pow(b,2) + 1);
+                v_x = b * v_y;
+            }
+        }
+
+        //compute acceletation
+        double delta_v_x = v_x - 0;
+        double delta_v_y = v_y - 0;
+        double sign_a_x = (delta_v_x < 0)? -1 : 1;
+        double sign_a_y = (delta_v_y < 0)?-1 : 1;
+
+        if (delta_v_x == 0) {
+            a_x = 0;
+            if (delta_v_y == 0) {
+                a_y = 0;
+            } else {
+                a_y = sign_a_y * a_max;
+            }
+        } else {
+            if (delta_v_y == 0) {
+                a_y = 0;
+                a_x = sign_a_x * a_max;
+            }
+            else {
+                c = delta_v_x/delta_v_y;
+                a_y = sign_a_y * a_max/sqrt(pow(c, 2) + 1);
+                a_x = c * a_y;
+            }
+        }
+
+        //compute time of getting half way
+        double tx1 = (a_x == 0)? 0 : sqrt(delta_x/a_x);
+        double ty1 = (a_y == 0)? 0 : sqrt(delta_y/a_y);
+        double tx2 = tx1;
+        double ty2 = ty1;
+
+        //compute velocity at half way
+        double v_x_1 = a_x*tx1;
+        double v_y_1 = a_y*ty1;
+        double txc, tyc;
+        if (fabs(v_x_1) < fabs(v_x)) {
+            txc = 0;
+        } else {
+            tx1 = (a_x == 0)? 0 : delta_v_x / a_x;
+            tx2 = tx1;
+            if (a_x == 0) {
+                txc = 0;
+            } else {
+                txc = -v_x / a_x + delta_x / v_x;
+            }
+        }
+
+        if (fabs(v_y_1) < fabs(v_y)) {
+            tyc = 0;
+        } else {
+            ty1 = (a_y == 0)? 0 : delta_v_y / a_y;
+            ty2 = ty1;
+            if (a_y == 0) {
+                tyc = 0;
+            } else {
+                tyc = -v_y / a_y + delta_y / v_y;
+            }
+        }
+
+        double time_X = tx1 + txc + tx2;
+        double time_Y = ty1 + tyc + ty2;
+        double time_of_segment = (time_X > time_Y)? time_X : time_Y;
+
+        //if time of all segments 0, add time to constant segment
+        if (time_X == 0) {
+            txc = time_of_segment;
+        }
+        if (time_Y == 0) {
+            tyc = time_of_segment;
+        }
+
+
+        trajectory ct;
+        segment x1, xc, x2, y1, yc, y2;
+        x1.time = tx1;
+        x1.acc = a_x;
+        xc.time = txc;
+        xc.acc = 0;
+        x2.time = tx2;
+        x2.acc = -a_x;
+
+        y1.time = ty1;
+        y1.acc = a_y;
+        yc.time = tyc;
+        yc.acc = 0;
+        y2.time = ty2;
+        y2.acc = -a_y;
+
+        ct.time = time_of_segment;
+        ct.x_seg1 = x1;
+        ct.x_seg2 = xc;
+        ct.x_seg3 = x2;
+        ct.y_seg1 = y1;
+        ct.y_seg2 = yc;
+        ct.y_seg3 = y2;
+
+        wayPointTrajectory.push_back(ct);
+        time += ct.time;
+    }
+
+    std::pair<std::vector<segment>,std::vector<segment>> segmentTrajectory;
+    std::vector<segment> segmentsX;
+    std::vector<segment> segmentsY;
+
+    for (auto tr: wayPointTrajectory) {
+        std::cout<<"x1 = "<<tr.x_seg1.time <<" x2 = "<<tr.x_seg2.time<<" x3 = "<<tr.x_seg3.time<<"\n";
+        std::cout<<"y1 = "<<tr.y_seg1.time <<" y2 = "<<tr.y_seg2.time<<" y3 = "<<tr.y_seg3.time<<"\n";
+        if (tr.x_seg1.time > 0) {
+            segmentsX.push_back(tr.x_seg1);
+        }
+        if (tr.x_seg2.time > 0) {
+            segmentsX.push_back(tr.x_seg2);
+        }
+        if (tr.x_seg3.time > 0) {
+            segmentsX.push_back(tr.x_seg3);
+        }
+
+        if (tr.y_seg1.time > 0) {
+            segmentsY.push_back(tr.y_seg1);
+        }
+        if (tr.y_seg2.time > 0) {
+            segmentsY.push_back(tr.y_seg2);
+        }
+        if (tr.y_seg3.time > 0) {
+            segmentsY.push_back(tr.y_seg3);
+        }
+    }
+
+    segmentTrajectory.first = segmentsX;
+    segmentTrajectory.second = segmentsY;
+
+    return segmentTrajectory;
+}
 /*
  * TESTS
  */

@@ -6,6 +6,7 @@
 #include "DIMT_RRT/dmit.h"
 #include "DIMT_RRT/load_waypoint.h"
 #include "DIMT_RRT/WaypointDynamicFollower.h"
+#include "V_graph/V_graph.h"
 
 namespace gazebo
 {
@@ -16,6 +17,7 @@ namespace gazebo
         std::string chassis = "chassis"; //Vehicle chasis.
         dynamicWaypoint wp;
         WaypointDynamicFollower wpf;
+        V_graph *vis_graph = new V_graph("Maps/polyObst.txt", 0.1);
         std::pair<double, double> start;
 
     public: void Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
@@ -28,19 +30,20 @@ namespace gazebo
             this->updateConnection = event::Events::ConnectWorldUpdateBegin(
                     boost::bind(&DynamicPointNavigation::OnUpdate, this, _1));
 
-            //load waypoints
-            this->wp = loadDynamicWaipoint("Maps/waypoint.txt");
 
-            this->start = wp.points[0];
+            std::pair<double,double> start = this->vis_graph->start;
+            std::vector<std::pair<double,double> > shortest_path = this->vis_graph->shortest_path();
+            std::reverse(shortest_path.begin(), shortest_path.end());
+
 
             //set position to the first point
-            this->model->SetLinkWorldPose(math::Pose(this->start.first, this->start.second,0.25,0,0,0), chassis);
+            this->model->SetLinkWorldPose(math::Pose(start.first, start.second,0.25,0,0,0), chassis);
 
             //get best trajectory
             std::pair<std::vector<segment>,std::vector<segment>> segmentTrajectory =
-                    waypointFollowing(this->wp.points, {0,0}, {0,0}, this->wp.vel_max, this->wp.acc_max);
+                    waypointFollowingWithStops2(shortest_path, {0,0}, {0,0}, 0.1, 0.01);
 
-            this->wpf = WaypointDynamicFollower(this->start, {0,0}, segmentTrajectory, 0.001);
+            this->wpf = WaypointDynamicFollower(start, {0,0}, segmentTrajectory, 0.001);
         }
 
         // Called by the world update start event
