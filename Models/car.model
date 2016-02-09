@@ -1,15 +1,14 @@
 <?xml version='1.0'?>
 <sdf version='1.4'>
   <model name="car">
-    <pose>0 0 0 0 0 0</pose>
-    <!-- <gravity>0</gravity> -->
+    <pose>0 0 .1 0 0 0</pose>
     <static>1</static>
   	<link name='chassis'>
-            <pose>0 0 .01 0 0 0</pose>
+            <pose>0 0 .1 0 0 0</pose>
             <collision name='collision'>
               <geometry>
                 <box>
-                  <size>.05 .02 .01</size>
+                  <size>.5 .2 .1</size>
                 </box>
               </geometry>
             </collision>
@@ -17,116 +16,115 @@
             <visual name='visual'>
               <geometry>
                 <box>
-                  <size>.05 .02 .01</size>
+                  <size>.5 .2 .1</size>
                 </box>
               </geometry>
             </visual>
 
             <collision name='caster_collision'>
-            <pose>-0.015 0 -0.005 0 0 0</pose>
+            <pose>-0.15 0 -0.05 0 0 0</pose>
             <geometry>
                 <sphere>
-                <radius>.005</radius>
+                <radius>.05</radius>
               </sphere>
             </geometry>
 
           </collision>
 
           <visual name='caster_visual'>
-            <pose>-0.015 0 -0.005 0 0 0</pose>
+            <pose>-0.15 0 -0.05 0 0 0</pose>
             <geometry>
               <sphere>
-                <radius>.005</radius>
+                <radius>.05</radius>
               </sphere>
             </geometry>
           </visual>
           </link>
 
         <link name="left_front__wheel">
-        <pose>0.02 0.013 0.01 0 0.15707 0.15707</pose>
+        <pose>0.2 0.13 0.1 0 1.5707 1.5707</pose>
         <gravity>0</gravity>
         <collision name="collision">
           <geometry>
             <cylinder>
-              <radius>.01</radius>
-              <length>.005</length>
+              <radius>.1</radius>
+              <length>.05</length>
             </cylinder>
           </geometry>
         </collision>
         <visual name="visual">
           <geometry>
             <cylinder>
-              <radius>.01</radius>
-              <length>.005</length>
+              <radius>.1</radius>
+              <length>.05</length>
             </cylinder>
           </geometry>
         </visual>
       </link>
 
       <link name="right_front_wheel">
-        <pose>0.02 -0.013 0.01 0 0.15707 0.15707</pose>
+        <pose>0.2 -0.13 0.1 0 1.5707 1.5707</pose>
         <gravity>0</gravity>
         <collision name="collision">
           <geometry>
             <cylinder>
-              <radius>.01</radius>
-              <length>.005</length>
+              <radius>.1</radius>
+              <length>.05</length>
             </cylinder>
           </geometry>
         </collision>
         <visual name="visual">
           <geometry>
             <cylinder>
-              <radius>.01</radius>
-              <length>.005</length>
+              <radius>.1</radius>
+              <length>.05</length>
             </cylinder>
           </geometry>
         </visual>
       </link>
 
       <link name="left_back__wheel">
-        <pose>-0.02 0.013 0.01 0 0.15707 0.15707</pose>
+        <pose>-0.2 0.13 0.1 0 1.5707 1.5707</pose>
         <gravity>0</gravity>
         <collision name="collision">
           <geometry>
             <cylinder>
-              <radius>.01</radius>
-              <length>.005</length>
+              <radius>.1</radius>
+              <length>.05</length>
             </cylinder>
           </geometry>
         </collision>
         <visual name="visual">
           <geometry>
             <cylinder>
-              <radius>.01</radius>
-              <length>.005</length>
+              <radius>.1</radius>
+              <length>.05</length>
             </cylinder>
           </geometry>
         </visual>
       </link>
 
       <link name="right_back_wheel">
-        <pose>-0.02 -0.013 0.01 0 0.15707 0.15707</pose>
+        <pose>-0.2 -0.13 0.1 0 1.5707 1.5707</pose>
         <gravity>0</gravity>
         <collision name="collision">
           <geometry>
             <cylinder>
-              <radius>.01</radius>
-              <length>.005</length>
+              <radius>.1</radius>
+              <length>.05</length>
             </cylinder>
           </geometry>
         </collision>
         <visual name="visual">
           <geometry>
             <cylinder>
-              <radius>.01</radius>
-              <length>.005</length>
+              <radius>.1</radius>
+              <length>.05</length>
             </cylinder>
           </geometry>
         </visual>
       </link>
-    <!-- <plugin name="discrete" filename="build/libdiscrete.so"/> -->
-    <!-- <plugin name="kinPoint" filename="build/libkinPoint.so"/> -->
-    <plugin name="kinCar" filename="build/libkinCar.so"/>
+    <!-- <plugin name="kinCar" filename="build/libkinCar.so"/> -->
+    <plugin name="dynCar" filename="build/libdynCar.so"/>
   </model>
 </sdf>

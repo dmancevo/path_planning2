@@ -3,30 +3,41 @@ from scipy import io
 import matplotlib.pyplot as plt
 
 X, Y = [],[]
-x, y = 3.0, 7.0
+x, y = 12, 22
 plt.scatter([x],[y],color='red')
 theta = 0
 v=0.1
 
 goals = [
-(5.87224, 7.98479),
-(8.28473, 6.72965),
-(6.67344, 5.20612),
-(8, 3)
+# (5.87224, 7.98479),
+# (8.28473, 6.72965),
+# (6.67344, 5.20612),
+# (8, 3)
+# (4.90182, 25.0733),
+# (10.1148, 9.39686),
+# (18, 7.5)
+np.array([16.3172, 20.7888]),
+np.array([16.1772, 17.5117]),
+np.array([12.7343, 15.9988]),
+np.array([12.283, 12.9405]),
+np.array([17.3585, 12.3326]),
+np.array([17.1415, 7.80797]),
+np.array([15, 7.5])
 ]
 gx, gy = goals[0][0],goals[0][1]
 plt.scatter([g[0] for g in goals],[g[1] for g in goals],color='green')
 
-L=0.1
+L=1.0
 
 phi=0
-phi_range = np.arange(-1,1,0.1)
+phiMax = np.pi/4.0
+
 obj = lambda phi,v,L,theta, target_theta: (theta+(v/L)*np.tan(phi)-target_theta)**2
 
 def log_search(v,L,theta, target_theta):
 
 	phi = 0
-	bound = 0.5
+	bound = phiMax/4
 	while bound > 0.001:
 
 		if np.power(theta+(v/L)*np.tan(phi+bound)-target_theta,2)<\
@@ -40,7 +51,7 @@ def log_search(v,L,theta, target_theta):
 
 	return phi
 
-delta = 0.001
+delta = 0.1
 i = 0
 for _ in range(30000):
 
@@ -56,7 +67,7 @@ for _ in range(30000):
 
 	theta += delta * (v/L) * np.tan(phi)
 
-	v=1-0.8*np.abs(phi)
+	v=1.0
 
 	x += delta * v * np.cos(theta)
 	y += delta * v * np.sin(theta)
@@ -64,7 +75,7 @@ for _ in range(30000):
 	X.append(x)
 	Y.append(y)
 
-	if np.sqrt(gx**2+gy**2)<0.2:
+	if np.sqrt(gx**2+gy**2)<0.3:
 		i+=1
 		if i == len(goals): break
 		gx, gy = goals[i][0],goals[i][1]
@@ -78,7 +89,7 @@ for _ in range(30000):
 	# 	print 'v: {0}\n'.format(v)
 
 #Draw map
-obstacle_map = io.loadmat('./Maps/polygObst.mat')
+obstacle_map = io.loadmat('./Maps/polygObstTest.mat')
 N = len(obstacle_map['button'])
 
 start = obstacle_map['startPos'][0]/10.0

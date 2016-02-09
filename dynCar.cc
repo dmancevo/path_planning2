@@ -9,7 +9,7 @@
 
 namespace gazebo
 {
-  class KinematicCarNavigation : public ModelPlugin
+  class DynamicCarNavigation : public ModelPlugin
   {
 
     public:
@@ -26,25 +26,26 @@ namespace gazebo
 
       //Initial orientation and target orientation
       double theta = 0.0;
-      double target_theta;
+      double target_theta, dist_target;
 
       //Initial phi and bound
       double phi, bound;
-      double phiMax=PI/4;
+      double phiMax = PI/4;
 
-      //Speed
-      float v = 1.0;
+      //Initial speed and acceleration;
+      float v = 0.0;
+      float a = 2.0;
 
       //Seconds per frame
       double delta = 0.001;
 
-      //Path to follow
+      //Path to follow.
       std::vector<std::pair<double,double> > path;
 
       //Current waypoint coordinates
       math::Vector3 waypoint;
 
-      //Keep track of current position
+      //Keep track of current position.
       math::Vector3 position;
 
       //Visibility graph
@@ -52,6 +53,7 @@ namespace gazebo
 
       //Currently back-tracking
       unsigned int back = 0;
+
 
     public: void Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
     {
@@ -61,7 +63,7 @@ namespace gazebo
       // Listen to the update event. This event is broadcast every
       // simulation iteration.
       this->updateConnection = event::Events::ConnectWorldUpdateBegin(
-          boost::bind(&KinematicCarNavigation::OnUpdate, this, _1));
+          boost::bind(&DynamicCarNavigation::OnUpdate, this, _1));
 
       //path planner
       path = v_graph->shortest_path();
@@ -69,14 +71,13 @@ namespace gazebo
 
       position = math::Vector3(v_graph->start.first,v_graph->start.second,0.1);
       waypoint = math::Vector3(path[t].first,path[t].second,0.1);
-
     }
 
     // Called by the world update start event
     public: void OnUpdate(const common::UpdateInfo & /*_info*/)
     {
       
-      if(std::sqrt(std::pow(waypoint.x,2)+std::pow(waypoint.y,2))>0.2){
+      if(std::sqrt(std::pow(waypoint.x,2)+std::pow(waypoint.y,2))>0.1){
         //Update waypoint
         waypoint = math::Vector3(path[t].first-position.x,
           path[t].second-position.y,0.1);
@@ -100,8 +101,15 @@ namespace gazebo
           bound /= 2.0;
         }
 
-        // Update speed
-        v = 1.0;
+        //Update acceleration
+        dist_target = std::sqrt(std::sqrt(std::pow(waypoint.x,2)+std::pow(waypoint.y,2)));
+        if(t>1){
+          if(v=1.0)
+            a = 0;
+          else
+            a = delta * 2.0;
+        } else if(dist_target<2.0)
+          a = delta * -2.0;
 
         //Backtrack to avoid obstacles
         if(back==0 && v_graph->validPath(std::make_pair(position.x,position.y),
@@ -110,7 +118,7 @@ namespace gazebo
         }
 
         if (back>0){
-          v *= -1;
+          a *= -1;
           phi = 0;
           back--;
         }
@@ -119,6 +127,9 @@ namespace gazebo
          std::make_pair(position.x+0.3*v*std::cos(theta), position.y+0.3*v*std::sin(theta)))==1){
           back=0;
         }
+
+        //Update speed
+        v += delta * a;
 
         //Update theta
         theta += delta * (v/L) * std::tan(phi);
@@ -133,10 +144,10 @@ namespace gazebo
         elapsed_time += delta;
 
       } else if(t>0){
-        t--;
-        waypoint = math::Vector3(path[t].first,path[t].second,0.1);
+          t--;
+          waypoint = math::Vector3(path[t].first,path[t].second,0.1);
       } else
-          std::cout<<"kinCar Time: "<<elapsed_time<<"\n";
+          std::cout<<"dynCar Time: "<<elapsed_time<<"\n";
 
       //Check if we can make a run for the next waypoint
       for(int j=0;j<t;j++){
@@ -158,5 +169,5 @@ namespace gazebo
   };
 
   // Register this plugin with the simulator
-  GZ_REGISTER_MODEL_PLUGIN(KinematicCarNavigation)
+  GZ_REGISTER_MODEL_PLUGIN(DynamicCarNavigation)
 }

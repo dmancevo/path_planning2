@@ -11,8 +11,10 @@ filename = askopenfilename()
 obstacle_map = io.loadmat(filename)
 N = len(obstacle_map['button'])
 
-polygons = [obstacle_map['startPos'][0]/10.0,
-obstacle_map['goalPos'][0]/10.0,np.zeros(2)]
+start = obstacle_map['startPos'][0]/10.0
+goal = obstacle_map['goalPos'][0]/10.0
+
+polygons = [start,goal,np.zeros(2)]
 for n in range(N):
 
 	if obstacle_map['button'][n] == 1:
@@ -22,7 +24,8 @@ for n in range(N):
 		polygons.append(np.zeros(2))
 
 #txt Map
-np.savetxt("polyObst.txt", polygons, delimiter=" ")
+np.savetxt("{0}.txt".format(filename.split('/')[-1].split('.')[0]),
+ polygons, delimiter=" ")
 
 # Draw the map
 plt.scatter([polygons[0][0]],polygons[0][1],color='red')
@@ -51,14 +54,17 @@ while i < len(polygons):
 
 	i+=1
 
-# nodes = []
+# nodes = [
+# ]
 
 # for node in nodes:
 #   plt.scatter([node[1]],[node[2]],color='green')
 #   plt.annotate(int(node[0]),(node[1],node[2]))
 
 
-# graph = []
+# graph = [
+
+# ]
 
 # for edge in graph:
 # 	n1,n2 = edge
@@ -73,12 +79,17 @@ while i < len(polygons):
 
 # plt.scatter([c[0] for c in centers],[c[1] for c in centers],color='orange')
 
+# triangles =[
+# ]
+
+# plt.scatter([t[0] for t in triangles],[t[1] for t in triangles],color='orange')
+
 # path = [
-# np.array([8, 3]),
-# np.array([7.15207, 5.08285]),
-# np.array([8.09124, 6.76901]),
-# np.array([6.03825, 7.86257]),
-# np.array([3, 7])]
+# np.array([18, 7.5]),
+# np.array([10.1148, 9.39686]),
+# np.array([4.90182, 25.0733]),
+# np.array([3, 7])
+# ]
 
 # for i in range(len(path)-1):
 #   n1 = path[i]
@@ -111,17 +122,25 @@ bs_world = bs(world,'xml')
 
 #Model
 Tk().withdraw() 
-filename = askopenfilename(initialdir="../Models")
-with open(filename, 'r') as f:
+model_filename = askopenfilename(initialdir="../Models")
+with open(model_filename, 'r') as f:
   model = bs(f,'xml')
 
 bs_world.include.insert_after(model.model)
+
+z = str(bs_world.model.pose).split()[2]
+bs_world.model.pose.replaceWith('<pose>{0} {1} {2} 0 0 0</pose>'\
+.format(start[0],start[1],z))
 
 #Target
 with open('../Models/target_marble.model', 'r') as f:
   target = bs(f,'xml')
 
 bs_world.include.insert_after(target.model)
+
+z = str(bs_world.model.pose).split()[2]
+bs_world.model.pose.replaceWith('<pose>{0} {1} {2} 0 0 0</pose>'\
+.format(goal[0],goal[1],z))
 
 coke_can = '''
 <model name="coke_can">
@@ -171,5 +190,5 @@ while i < len(polygons):
 
 	i+=1
 
-with open('../Worlds/polyObst.world','wb') as f:
-	f.write(bs_world.prettify())
+with open('../Worlds/{0}.world'.format(filename.split('/')[-1].split('.')[0]),'wb') as f:
+	f.write(bs_world.prettify().replace('&lt;','<').replace('&gt;','>'))
