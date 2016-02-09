@@ -5,6 +5,8 @@
 #include <vector>
 #include "dp_structs.h"
 
+#ifndef WAYPOINTDYNAMICFOLLOWER_H
+#define WAYPOINTDYNAMICFOLLOWER_H
 
 class WaypointDynamicFollower {
 private:
@@ -37,3 +39,4 @@ public:
     std::pair<double, double> getNextCoordinates();
 };
 
+#endif
